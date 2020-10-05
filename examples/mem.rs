@@ -13,7 +13,7 @@ use esp32_hal::alloc::{Allocator, DRAM_ALLOCATOR};
 use esp32_hal::clock_control::{sleep, CPUSource::PLL, ClockControl, ClockControlConfig};
 use esp32_hal::dport::Split;
 use esp32_hal::dprintln;
-use esp32_hal::mem::{memcmp, memcpy, memcpy_reverse, memset};
+use esp32_hal::mem::{xmemcmp, xmemcpy, xmemcpy_reverse, xmemset};
 use esp32_hal::serial::{config::Config, Serial};
 use esp32_hal::target;
 
@@ -107,21 +107,21 @@ fn main() -> ! {
         "memset aligned, sized 4 bytes",
         BUF_LEN,
         &|| unsafe {
-            memset(&(dst[0]) as *const _ as *mut _, 0, BUF_LEN);
+            xmemset(&(dst[0]) as *const _ as *mut _, 0, BUF_LEN);
         },
     );
 
     time(&mut uart0, "memset aligned", BUF_LEN, &|| unsafe {
-        memset(&(dst[0]) as *const _ as *mut _, 0, BUF_LEN - 1);
+        xmemset(&(dst[0]) as *const _ as *mut _, 0, BUF_LEN - 1);
     });
 
     time(&mut uart0, "memset", BUF_LEN, &|| unsafe {
-        memset(&(dst[1]) as *const _ as *mut _, 0, BUF_LEN - 1);
+        xmemset(&(dst[1]) as *const _ as *mut _, 0, BUF_LEN - 1);
     });
 
     let tx = &mut uart0;
     unsafe {
-        for f in &[memcpy, memcpy_reverse] {
+        for f in &[xmemcpy, xmemcpy_reverse] {
             time_memcpy(tx, &mut (dst[0]), &mut (src[0]), BUF_LEN, *f);
             time_memcpy(tx, &mut (dst[0]), &mut (src[0]), BUF_LEN - 1, *f);
             time_memcpy(tx, &mut (dst[1]), &mut (src[1]), BUF_LEN - 1, *f);
@@ -171,7 +171,7 @@ unsafe fn time_memcpy(
 
     let time = end.wrapping_sub(start) as f32 / ClockControlConfig {}.cpu_frequency().0 as f32;
 
-    let cmp_res = memcmp(dst as *const _ as *mut _, src as *const _ as *mut _, len);
+    let cmp_res = xmemcmp(dst as *const _ as *mut _, src as *const _ as *mut _, len);
 
     writeln!(
         output,
@@ -188,7 +188,7 @@ unsafe fn time_memcpy(
     )
     .unwrap();
 
-    memset(dst as *const _ as *mut _, 0, len);
+    xmemset(dst as *const _ as *mut _, 0, len);
 }
 
 const WDT_WKEY_VALUE: u32 = 0x50D83AA1;
