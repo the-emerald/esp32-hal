@@ -48,7 +48,7 @@ const CHUNK_SIZES_MEMCMP: [usize; 2] = [8, 1]; // bigger chunks require long jum
 ///
 /// If data overlaps and src < dst, the data will be corrupted.
 #[cfg_attr(all(feature = "mem", not(feature = "mangled-names")), no_mangle)]
-pub unsafe extern "C" fn xmemcpy(mut dst: *mut u8, src: *const u8, n: usize) -> *mut u8 {
+pub unsafe extern "C" fn memcpy(mut dst: *mut u8, src: *const u8, n: usize) -> *mut u8 {
     // fast paths for small n
     if n == PTR_SIZE {
         *(dst as *mut c_int) = *(src as *mut c_int);
@@ -119,7 +119,7 @@ pub unsafe extern "C" fn xmemcpy(mut dst: *mut u8, src: *const u8, n: usize) -> 
 ///
 /// If data overlaps and src > dst, the data will be corrupted.
 #[cfg_attr(all(feature = "mem", not(feature = "mangled-names")), no_mangle)]
-pub unsafe extern "C" fn xmemcpy_reverse(dst: *mut u8, src: *const u8, n: usize) -> *mut u8 {
+pub unsafe extern "C" fn memcpy_reverse(dst: *mut u8, src: *const u8, n: usize) -> *mut u8 {
     // fast paths for small n
     if n == PTR_SIZE {
         *(dst as *mut c_int) = *(src as *mut c_int);
@@ -192,17 +192,17 @@ pub unsafe extern "C" fn xmemcpy_reverse(dst: *mut u8, src: *const u8, n: usize)
 
 /// Copies n-bytes of data from src to dst and properly handles overlapping data
 #[cfg_attr(all(feature = "mem", not(feature = "mangled-names")), no_mangle)]
-pub unsafe extern "C" fn xmemmove(dst: *mut u8, src: *const u8, n: usize) -> *mut u8 {
+pub unsafe extern "C" fn memmove(dst: *mut u8, src: *const u8, n: usize) -> *mut u8 {
     if src < dst as *const u8 {
-        xmemcpy_reverse(dst, src, n)
+        memcpy_reverse(dst, src, n)
     } else {
-        xmemcpy(dst, src, n)
+        memcpy(dst, src, n)
     }
 }
 
 /// Fills n-bytes with byte sized value
 #[cfg_attr(all(feature = "mem", not(feature = "mangled-names")), no_mangle)]
-pub unsafe extern "C" fn xmemset(mut s: *mut u8, c: c_int, n: usize) -> *mut u8 {
+pub unsafe extern "C" fn memset(mut s: *mut u8, c: c_int, n: usize) -> *mut u8 {
     // fast paths for small n
     if n == PTR_SIZE {
         *(s as *mut c_int) = c_int::from_ne_bytes([c as u8; PTR_SIZE]);
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn xmemset(mut s: *mut u8, c: c_int, n: usize) -> *mut u8 
 
 /// Compare n-bytes of data from s1 and s2 and returns <0 for s1<s2, 0 for s1=s2 and >0 for s1>s2
 #[cfg_attr(all(feature = "mem", not(feature = "mangled-names")), no_mangle)]
-pub unsafe extern "C" fn xmemcmp(mut s1: *const u8, s2: *const u8, n: usize) -> i32 {
+pub unsafe extern "C" fn memcmp(mut s1: *const u8, s2: *const u8, n: usize) -> i32 {
     let s2_off = (s2 as usize).wrapping_sub(s1 as usize);
 
     let end = s1.wrapping_add(n);
@@ -342,7 +342,7 @@ pub unsafe extern "C" fn xmemcmp(mut s1: *const u8, s2: *const u8, n: usize) -> 
 
 /// Compare n-bytes of data from s1 and s2 and returns 0 for s1==s2 and !=0 otherwise
 #[cfg_attr(all(feature = "mem", not(feature = "mangled-names")), no_mangle)]
-pub unsafe extern "C" fn xbcmp(mut s1: *const u8, s2: *const u8, n: usize) -> i32 {
+pub unsafe extern "C" fn bcmp(mut s1: *const u8, s2: *const u8, n: usize) -> i32 {
     // fast paths for small n
     if n == PTR_SIZE {
         return (*(s1 as *const c_int) != *(s2 as *const c_int)) as i32;
