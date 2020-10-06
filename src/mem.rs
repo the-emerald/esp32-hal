@@ -261,7 +261,7 @@ pub unsafe fn memset(mut s: *mut u8, c: c_int, n: usize) -> *mut u8 {
 
 /// Compare n-bytes of data from s1 and s2 and returns <0 for s1<s2, 0 for s1=s2 and >0 for s1>s2
 #[cfg_attr(all(feature = "mem", not(feature = "mangled-names")), no_mangle)]
-pub unsafe memcmp(mut s1: *const u8, s2: *const u8, n: usize) -> i32 {
+pub unsafe fn memcmp(mut s1: *const u8, s2: *const u8, n: usize) -> i32 {
     let s2_off = (s2 as usize).wrapping_sub(s1 as usize);
 
     let end = s1.wrapping_add(n);
